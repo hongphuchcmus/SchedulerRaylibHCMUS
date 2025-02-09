@@ -7,7 +7,6 @@
 #include "def.h"
 #include "schedule.h"
 
-
 void SearchAndFilter(GuiLayoutState* guiState, Class** classes){
   if (guiState->searchSubmited || guiState->filterSubmited || guiState->matchCurrentCellToggled){
     if (guiState->searchResults){

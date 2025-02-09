@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Table Extractor",
+  "version": "1.0",
+  "description": "Extract tables to TXT with tab separators",
+  "permissions": [
+    "activeTab",
+    "downloads",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["content.js"]
+  }]
+}
