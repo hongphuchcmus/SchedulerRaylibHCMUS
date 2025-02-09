@@ -1,6 +1,18 @@
 # SchedulerRaylibHCMUS
 An simple app to help you visualize your class schedule.
 # Usage
+To start scheduling you have to provide the data of available classes in a Tab-delimited text file in the Release's `resources` folder. You can use the file `resources/extracted_table.txt` that already came with the Release, or use a Google Chrome extension to extract the data directly from "List of Open Class" page on your HCMUS Portal.  
+
+# Table Extraction
+You can download the .txt file containing your avaible classes using a chrome extension included in this repository.
++ Download this repository
++ Open Chrome, navigate to `chrome://extensions`
++ Turn on **Developer Mode** if you haven't yet
++ Click on **Load Unpacked Extension**, a folder browser window opens up
++ Choose the folder `chrome_extension` from your downloaded repository. The extension will then be installed on your browser
+
+Go to "List of Open Class" page on your HCMUS Portal, enable the extension. Click on `Extract Table`, then select the `/resources` directory of your Release, and save the file as `extracted_table.txt`.  
+**Note** The name file must be exactly `extracted_table.txt` for the excutable to work.
 
 # How to build
 1. **Install Raylib**  
