@@ -1,0 +1,29 @@
+{
+	"files.exclude": {
+		"**/.git": true,
+		"**/.svn": true,
+		"**/.hg": true,
+		"**/CVS": true,
+		"**/.DS_Store": true,
+		"**/*.o": true,
+		"**/*.exe": true,
+	},
+	"files.associations": {
+		"*.sqlbook": "sql",
+		"*.ndjson": "jsonl",
+		"*.dbclient-js": "javascript",
+		"stdio.h": "c",
+		"def.h": "c",
+		"course.h": "c",
+		"*.m": "c",
+		"language.h": "c",
+		"raylib.h": "c",
+		"stdlib.h": "c",
+		"string.h": "c",
+		"gui.h": "c",
+		"stddef.h": "c",
+		"math.h": "c",
+		"schedule.h": "c",
+		"raygui.h": "c"
+	}
+}
