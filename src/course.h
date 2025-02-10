@@ -38,6 +38,7 @@ typedef struct ClassSchedule {
   int dayOfWeek;
   int periodStart;
   int periodEnd;
+  char room[50];
 } ClassSchedule ;
 
 typedef struct Class {
@@ -51,7 +52,6 @@ typedef struct Class {
   ClassSchedule classSchedule;
   int year;
   char location[50];
-
 } Class;
 
 const char* ClassToString(const Class* c);
@@ -60,6 +60,8 @@ Class** ParseClasses(const char* filePath, int* outSize);
 ClassSchedule ParseClassSchedule(const char* scheduleStr);
 Period ParsePeriod(float periodFloat);
 float PeriodToFloat(Period period);
+char* PeriodToString(Period period);
+
 Class** FilterByCourseId(Class** classes, const char* courseId);
 Class** FilterByCourseName(Class** classes, const char* courseName);
 Class** FilterByClassId(Class** classes, const char* classId);

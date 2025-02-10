@@ -8,7 +8,7 @@
 #include "schedule.h"
 
 void SearchAndFilter(GuiLayoutState* guiState, Class** classes){
-  if (guiState->searchSubmited || guiState->filterSubmited || guiState->matchCurrentCellToggled){
+  if (guiState->searchSubmitted || guiState->filterSubmitted || guiState->matchCurrentCellToggled){
     if (guiState->searchResults){
       // Classses are referenced from the main classes array, only the array of classes need to be freed
       MemFree(guiState->searchResults);
@@ -64,10 +64,33 @@ void SearchAndFilter(GuiLayoutState* guiState, Class** classes){
   }
 }
 
+void SetFontStyle(GuiLayoutState* guiState){
+  if (guiState->fontStyleSubmitted){
+    switch (guiState->fontStyleSelected)
+    {
+    case FONT_STYLE_NORMAL_INDEX:
+      GuiSetFont(LoadFont(FONT_STYLE_NORMAL));
+      break;
+    case FONT_STYLE_BOLD_INDEX:
+      GuiSetFont(LoadFont(FONT_STYLE_BOLD));
+      break;
+    case FONT_STYLE_MONO_INDEX:
+      GuiSetFont(LoadFont(FONT_STYLE_MONO));
+      break;
+    case FONT_STYLE_MONO_BOLD_INDEX:
+      GuiSetFont(LoadFont(FONT_STYLE_BOLD));
+      break;
+    default:
+      break;
+    }
+  }
+}
+
 int main() {
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Scheduler with Raylib");
   SetTargetFPS(40);
 
+  GuiSetFont(LoadFont(FONT_STYLE_DEFAULT));
   GuiSetStyle(DEFAULT, TEXT_SIZE, FONT_SIZE_DEFAULT);
 
   int classCount;
@@ -79,6 +102,8 @@ int main() {
 
   while (!WindowShouldClose()) {
     SearchAndFilter(&guiState, classes);
+    SetFontStyle(&guiState);
+
     if (guiState.emptyCellSelected){
       guiState.searchResults = FilterByPeriod(classes, guiState.emptyCellSelectedDay, guiState.emptyCellSelectedPeriod);
     }
@@ -89,19 +114,7 @@ int main() {
     if (guiState.scheduleClassRemovedSelected){
       RemoveClassFromSchedule(studentSchedule, guiState.scheduleClassRemoved);
     }
-    if (guiState.fontSizeDropdownSubmitted){
-      switch (guiState.fontSizeSelected)
-      {
-      case FONT_SIZE_SMALL_INDEX:
-        GuiSetStyle(DEFAULT, TEXT_SIZE, FONT_SIZE_SMALL);
-        break;
-      case FONT_SIZE_NORMAL_INDEX:
-        GuiSetStyle(DEFAULT, TEXT_SIZE, FONT_SIZE_NORMAL);
-        break;
-      default:
-        break;
-      }
-    }
+    
     BeginDrawing();
       ClearBackground(RAYWHITE);
       UpdateGuiLayout(&guiState);

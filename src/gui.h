@@ -17,9 +17,9 @@
 typedef struct GuiLayoutState {
   bool filterEditMode;
   char filterText[128];
-  bool filterSubmited;
+  bool filterSubmitted;
   bool searchEditMode;
-  bool searchSubmited;
+  bool searchSubmitted;
   bool matchCurrentCellEnabled;
   bool matchCurrentCellToggled;
   Vector2 searchResultsScrollOffset;
@@ -39,9 +39,8 @@ typedef struct GuiLayoutState {
   const Class* searchResultSelectedClass;
   bool scheduleClassRemovedSelected; // A class is right clicked
   const Class* scheduleClassRemoved;
-  bool fontSizeDropdownActive;
-  int fontSizeSelected;
-  bool fontSizeDropdownSubmitted;
+  int fontStyleSelected;
+  bool fontStyleSubmitted;
 } GuiLayoutState;
 
 GuiLayoutState InitGuiLayoutState();

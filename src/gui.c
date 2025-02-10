@@ -23,7 +23,7 @@ GuiLayoutState InitGuiLayoutState()
 {
   GuiLayoutState state = {0};
   state.searchEditMode = false;
-  state.searchSubmited = false;
+  state.searchSubmitted = false;
   state.searchResultsScrollOffset = (Vector2){0};
   state.searchResults = NULL;
   state.studentSchedule = NULL;
@@ -36,10 +36,13 @@ GuiLayoutState InitGuiLayoutState()
   state.scheduleClassRemovedSelected = false;
   state.scheduleClassRemoved = NULL;
   state.filterEditMode = false;
-  state.filterSubmited = false;
+  state.filterSubmitted = false;
   state.filterOptionsDropdownSelected = 0;
   state.filterOptionsDropdownActive = false;
   state.matchCurrentCellEnabled = false;
+  state.matchCurrentCellToggled = false;
+  state.fontStyleSelected = FONT_STYLE_DEFAULT_INDEX;
+
   // (Search + Filter) 
   // Filter Label
   state.layoutRecs[25] = (Rectangle){SCREEN_WIDTH - 400, 10, 190, 30};
@@ -73,11 +76,10 @@ GuiLayoutState InitGuiLayoutState()
 
   // Credit Counter Label
   state.layoutRecs[29]  = (Rectangle){10, SCREEN_HEIGHT - 90, 390, 30};
-  // Font Size Label
-  state.layoutRecs[32]  = (Rectangle){SCREEN_WIDTH - 400 - 200 - 110, SCREEN_HEIGHT - 90, 100, 30};
-  // Font Size Edit Dropdown
-  state.layoutRecs[31]  = (Rectangle){SCREEN_WIDTH - 400 - 200, SCREEN_HEIGHT - 90, 190, 30};
-  
+  // Font Style Label
+  state.layoutRecs[32]  = (Rectangle){SCREEN_WIDTH - 400 - 400 - 110, SCREEN_HEIGHT - 90, 100, 30};
+  // Font Style Edit Toggle Group
+  state.layoutRecs[31]  = (Rectangle){SCREEN_WIDTH - 400 - 400, SCREEN_HEIGHT - 90, 90, 30};
   // Tooltip Label
   state.layoutRecs[30]  = (Rectangle){10, SCREEN_HEIGHT - 60, 800, 20};
 // Controls Label
@@ -93,15 +95,15 @@ void UpdateGuiLayout(GuiLayoutState *state)
   //Filter Label
   GuiLabel(state->layoutRecs[25], "Filter by:");
   // Filter Text Box
-  state->filterSubmited = false;
+  state->filterSubmitted = false;
   if (GuiTextBox(state->layoutRecs[27], state->filterText, 128, state->filterEditMode)){
     state->filterEditMode = !state->filterEditMode;
     if (!state->filterEditMode){
-      state->filterSubmited = true;
+      state->filterSubmitted = true;
     }
   }
   if (state->filterEditMode && GetKeyPressed()){
-    state->filterSubmited = true;
+    state->filterSubmitted = true;
   }
   // Match Current Cell Checkbox
   bool preMatchCurrentCellEnabled = state->matchCurrentCellEnabled;
@@ -113,15 +115,15 @@ void UpdateGuiLayout(GuiLayoutState *state)
   // Search Label
   GuiLabel(state->layoutRecs[0], "Search by:");
   // Search Text Box
-  state->searchSubmited = false;
+  state->searchSubmitted = false;
   if (GuiTextBox(state->layoutRecs[1], state->searchText, 128, state->searchEditMode)){
     state->searchEditMode = !state->searchEditMode;
     if (!state->searchEditMode){
-      state->searchSubmited = true;
+      state->searchSubmitted = true;
     }
   }
   if (state->searchEditMode && GetKeyPressed()){
-    state->searchSubmited = true;
+    state->searchSubmitted = true;
   }
   // Search Results Scroll Panel
   // FIXME: Due to not implementing exclusive mode, if you click the dropdown, the search result below it will get clicked as well 
@@ -134,7 +136,7 @@ void UpdateGuiLayout(GuiLayoutState *state)
     
     for (int i = 0; state->searchResults && state->searchResults[i]; i++) resultCount++;
     //// Change the content bounds to match the number of results
-    Rectangle resultContentBounds = (Rectangle) {0, 0, 500, resultCount * 50};
+    Rectangle resultContentBounds = (Rectangle) {0, 0, 800, resultCount * 50};
     GuiScrollPanel(state->layoutRecs[2], NULL, resultContentBounds, &state->searchResultsScrollOffset, &view);
     
     BeginScissorMode(view.x, view.y, view.width, view.height);
@@ -165,11 +167,13 @@ void UpdateGuiLayout(GuiLayoutState *state)
   
   // Search Dropdown
   if (GuiDropdownBox(state->layoutRecs[3], filterOptions, &state->searchOptionsDropdownSelected, state->searchOptionsDropdownActive)){
-    state->searchOptionsDropdownActive = !state->searchOptionsDropdownActive;
+    // Prevent both dropdowns from being active at the same time
+    if (!state->filterOptionsDropdownActive){
+      state->searchOptionsDropdownActive = !state->searchOptionsDropdownActive;
+    } 
   }
   // Filter Dropdown
-  // Must use else if here to prevent both dropdowns from being active at the same time
-  else if (GuiDropdownBox(state->layoutRecs[26], filterOptions, &state->filterOptionsDropdownSelected, state->filterOptionsDropdownActive)){
+  if (GuiDropdownBox(state->layoutRecs[26], filterOptions, &state->filterOptionsDropdownSelected, state->filterOptionsDropdownActive)){
     state->filterOptionsDropdownActive = !state->filterOptionsDropdownActive;
   }
   // Always prioritize the dropdown, since the dropdown rect is overlapping the search results rect
@@ -203,7 +207,7 @@ void UpdateGuiLayout(GuiLayoutState *state)
     if (i >= PERIOD_6){
       DrawRectangleRec((Rectangle){10, TABLE_MARGIN_TOP + TABLE_HEADER_HEIGHT + i * TABLE_CELL_HEIGHT, TABLE_CELL_WIDTH * 8, TABLE_CELL_HEIGHT}, COLOR_LIGHTGRAY);
     }
-    GuiLabel(state->layoutRecs[11 + i], TextFormat("%.2f", PeriodToFloat(i)));
+    GuiLabel(state->layoutRecs[11 + i], PeriodToString(i));
     GuiLine((Rectangle){10, TABLE_MARGIN_TOP + TABLE_HEADER_HEIGHT + i * TABLE_CELL_HEIGHT, TABLE_CELL_WIDTH * 8, 1}, NULL);
   }
   GuiLine((Rectangle){10, TABLE_MARGIN_TOP + TABLE_HEADER_HEIGHT + 14 * TABLE_CELL_HEIGHT, TABLE_CELL_WIDTH * 8, 1}, NULL);
@@ -312,18 +316,18 @@ void UpdateGuiLayout(GuiLayoutState *state)
   // A credit counter
   GuiLabel(state->layoutRecs[29], TextFormat("Total Credits: %d", GetCreditCount(state->studentSchedule)));
   
-  // Font Size Label
-  GuiLabel(state->layoutRecs[32], "Font Size:");
-  // Font Size Edit Dropdown
-  state->fontSizeDropdownSubmitted = false;
-  const char* fontSizeOptions = "10;20";
-  if (GuiDropdownBox(state->layoutRecs[31], fontSizeOptions, &state->fontSizeSelected, state->fontSizeDropdownActive)){
-    state->fontSizeDropdownActive = !state->fontSizeDropdownActive;
-    if (!state->fontSizeDropdownActive){
-      state->fontSizeDropdownSubmitted = true;
-    }
-  }
+  // Font Style Label
+  GuiLabel(state->layoutRecs[32], "Font Style:");
+  // Font Style Edit Dropdown
+  const char* fontStyleOptions = "Normal;Bold;Mono;Mono-Bold";
   
+  int tempFontStyleSelected = state->fontStyleSelected;
+  GuiToggleGroup(state->layoutRecs[31], fontStyleOptions, &state->fontStyleSelected);
+  state->fontStyleSubmitted = false;
+  if (tempFontStyleSelected != state->fontStyleSelected){
+    state->fontStyleSubmitted = true;
+  }
+
   // A nice little tool tip at the end of screen to show the current hovered class details
   if (hoveredClass){
     Rectangle tooltipRect = state->layoutRecs[30];
@@ -333,5 +337,5 @@ void UpdateGuiLayout(GuiLayoutState *state)
   }
 
   // Controls Label
-  GuiLabel(state->layoutRecs[33], "ARROW KEYS - Navigate    RMB - Remove Class    LMB - Select Class    ESC - Exit");
+  GuiLabel(state->layoutRecs[33], "ARROW KEYS - Navigate    LMB - Add Class    RMB - Remove Class    ESC - Exit");
 }

@@ -36,8 +36,8 @@ static const char *fTextToUpper(const char *text)
 
 const char *ClassToString(const Class *c)
 {
-  return strdup(TextFormat("%s | %s | %s | %s | %d/%d | TC:%d | T%d %.1f-%.1f | %d",
-    c->courseId, c->courseName, c->classId, c->location, c->enrolledCount, c->classSize, c->creditCount, c->classSchedule.dayOfWeek, PeriodToFloat(c->classSchedule.periodStart), PeriodToFloat(c->classSchedule.periodEnd), c->year));
+  return strdup(TextFormat("%s -- %s -- %s -- %s -- %d/%d -- TC:%d -- T%d %s-%s -- %s -- %d",
+    c->courseId, c->courseName, c->classId, c->location, c->enrolledCount, c->classSize, c->creditCount, c->classSchedule.dayOfWeek, PeriodToString(c->classSchedule.periodStart), PeriodToString(c->classSchedule.periodEnd), c->classSchedule.room, c->year));
 }
 
 Class *ParseClass(char *dataLine)
@@ -133,7 +133,15 @@ ClassSchedule ParseClassSchedule(const char *scheduleStr)
   int dayOfWeek;
   float periodStartFloat;
   float periodEndFloat;
-  sscanf(scheduleStr, "T%d(%f-%f)", &dayOfWeek, &periodStartFloat, &periodEndFloat);
+  char roomBuffer[50];
+  sscanf(scheduleStr, "T%d(%f-%f)%s", &dayOfWeek, &periodStartFloat, &periodEndFloat, roomBuffer);
+  //With Room:    T2(1-4)-P.cs2:E202
+  //Without Room: T6(1-4)
+  if (roomBuffer[0] != '-'){
+    strcpy(schedule.room, "N/A");
+  } else {
+    strcpy(schedule.room, roomBuffer + 1);
+  }
 
   schedule.dayOfWeek = dayOfWeek;
   schedule.periodStart = ParsePeriod(periodStartFloat);
@@ -181,6 +189,18 @@ float PeriodToFloat(Period period)
     case PERIOD_9: return 9.0f;
     case PERIOD_10: return 10.0f;
     default: return -1.0f; // Invalid period
+  }
+}
+
+char *PeriodToString(Period period)
+{
+  // This used static buffer, which won't last forever
+  float periodFloat = PeriodToFloat(period);
+  float epsilon = 0.01f;
+  if (fabs(periodFloat - (int)periodFloat) < epsilon){
+    return TextFormat("%d", (int)periodFloat);
+  } else {
+    return TextFormat("%.1f", periodFloat);
   }
 }
 

@@ -9,12 +9,17 @@
 #define TOP_RIGHT_CORNER CLITERAL(Vector2){SCREEN_WIDTH, 0}
 #define BOTTOM_LEFT_CORNER CLITERAL(Vector2){0, SCREEN_HEIGHT}
 #define SCREEN_CENTER CLITERAL(Vector2){SCREEN_WIDTH/2, SCREEN_HEIGHT/2}
-#define FONT_SIZE_DEFAULT 10
-#define FONT_SIZE_SMALL 10
-#define FONT_SIZE_NORMAL 20
-#define FONT_SIZE_SMALL_INDEX 0
-#define FONT_SIZE_NORMAL_INDEX 1
-
+#define FONT_SIZE_DEFAULT 16
+#define FONT_STYLE_DEFAULT "resources/PixelOperator.ttf"
+#define FONT_STYLE_NORMAL "resources/PixelOperator.ttf"
+#define FONT_STYLE_BOLD "resources/PixelOperator-Bold.ttf"
+#define FONT_STYLE_MONO "resources/PixelOperatorMono.ttf"
+#define FONT_STYLE_MONO_BOLD "resources/PixelOperatorMono-Bold.ttf"
+#define FONT_STYLE_DEFAULT_INDEX 0
+#define FONT_STYLE_NORMAL_INDEX 0
+#define FONT_STYLE_BOLD_INDEX 1
+#define FONT_STYLE_MONO_INDEX 2
+#define FONT_STYLE_MONO_BOLD_INDEX 3
 #define TEXT_ALIGN_DEFAULT TEXT_ALIGN_LEFT
 
 #define COLOR_LIGHTBLUE CLITERAL(Color){129, 230, 247, 255}
