@@ -1,3 +1,4 @@
 main
 obj/*
+!obj/.keep
 *.exe

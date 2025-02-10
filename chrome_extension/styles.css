@@ -1,0 +1,16 @@
+body {
+  width: 300px;
+  padding: 10px;
+}
+
+button {
+  width: 100%;
+  padding: 8px;
+  color: #8a883c;
+  cursor: pointer;
+}
+
+#status {
+  margin-top: 10px;
+  color: #8a883c;
+}
