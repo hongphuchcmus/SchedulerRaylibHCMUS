@@ -8,7 +8,7 @@
 Rectangle fCalculateCellRect(int i, int j){
   return (Rectangle){
     TABLE_PADDING + TABLE_MARGIN_LEFT + TABLE_CELL_WIDTH * j, TABLE_PADDING + TABLE_MARGIN_TOP + TABLE_HEADER_HEIGHT + TABLE_CELL_HEIGHT * i,
-    TABLE_CELL_WIDTH - TABLE_PADDING, TABLE_CELL_HEIGHT - TABLE_PADDING
+    TABLE_CELL_WIDTH - 2 * TABLE_PADDING, TABLE_CELL_HEIGHT - 2 * TABLE_PADDING
   };
 }
 
@@ -50,7 +50,7 @@ GuiLayoutState InitGuiLayoutState()
   state.layoutRecs[26] = (Rectangle){SCREEN_WIDTH - 200, 10, 190, 30};
   // Match Current Cell Checkbox
   state.layoutRecs[28] = (Rectangle){SCREEN_WIDTH - 400, 50, 30, 30};
-  // Filter  Text Box
+  // Filter Text Box
   state.layoutRecs[27] = (Rectangle){SCREEN_WIDTH - 400, 90, 390, 30};
   // Search Label
   state.layoutRecs[0] = (Rectangle){SCREEN_WIDTH - 400, 130, 190, 30};
@@ -59,10 +59,10 @@ GuiLayoutState InitGuiLayoutState()
   // Search Text Box
   state.layoutRecs[1] = (Rectangle){SCREEN_WIDTH - 400, 170, 390, 30};
   // Search Results Scroll Panel Bounds
-  state.layoutRecs[2] = (Rectangle){SCREEN_WIDTH - 400, 210, 390, 500};
+  state.layoutRecs[2] = (Rectangle){SCREEN_WIDTH - 400, 210, 390, 400};
   
   // Schedule Layout
-  // Monday Label
+  // Day Of Week Label
   for (int i = 0; i < 7; i++) {
     state.layoutRecs[4 + i] = (Rectangle){TABLE_MARGIN_LEFT + i * TABLE_CELL_WIDTH, TABLE_MARGIN_TOP, TABLE_CELL_WIDTH , TABLE_HEADER_HEIGHT};
   }
@@ -73,17 +73,18 @@ GuiLayoutState InitGuiLayoutState()
     state.layoutRecs[11 + i] = (Rectangle){10, TABLE_MARGIN_TOP + TABLE_HEADER_HEIGHT + i * TABLE_CELL_HEIGHT, 100, TABLE_CELL_HEIGHT};
   }
 
-
-  // Credit Counter Label
-  state.layoutRecs[29]  = (Rectangle){10, SCREEN_HEIGHT - 90, 390, 30};
-  // Font Style Label
-  state.layoutRecs[32]  = (Rectangle){SCREEN_WIDTH - 400 - 400 - 110, SCREEN_HEIGHT - 90, 100, 30};
-  // Font Style Edit Toggle Group
-  state.layoutRecs[31]  = (Rectangle){SCREEN_WIDTH - 400 - 400, SCREEN_HEIGHT - 90, 90, 30};
   // Tooltip Label
-  state.layoutRecs[30]  = (Rectangle){10, SCREEN_HEIGHT - 60, 800, 20};
+  state.layoutRecs[34]  = (Rectangle){10, SCREEN_HEIGHT - 90, 110, 20};
+  // Tooltip Text Box
+  state.layoutRecs[30]  = (Rectangle){120, SCREEN_HEIGHT - 90, SCREEN_WIDTH - 130, 20};
+  // Credit Counter Label
+  state.layoutRecs[29]  = (Rectangle){10, SCREEN_HEIGHT - 60, 390, 20};
   // Controls Label
-  state.layoutRecs[33]  = (Rectangle){10, SCREEN_HEIGHT - 30, 820, 20};
+  state.layoutRecs[33]  = (Rectangle){10, SCREEN_HEIGHT - 30, SCREEN_WIDTH - 300, 20};
+  // Font Style Label
+  state.layoutRecs[32]  = (Rectangle){SCREEN_WIDTH - 310, SCREEN_HEIGHT - 30, 60, 20};
+  // Font Style Edit Toggle Group
+  state.layoutRecs[31]  = (Rectangle){SCREEN_WIDTH - 240, SCREEN_HEIGHT - 30, 70, 20};
 
   return state;
 }
@@ -130,20 +131,21 @@ void UpdateGuiLayout(GuiLayoutState *state)
   state->searchResultSelected = false;
   state->searchResultSelectedClass = NULL;
   Class* selectedResult = NULL; // The class from the search result that is selected
+  Class* hoveredSearchResult = NULL;
   if (state->searchResults) {
     Rectangle view = {0};
     int resultCount = 0;
     
     for (int i = 0; state->searchResults && state->searchResults[i]; i++) resultCount++;
     //// Change the content bounds to match the number of results
-    Rectangle resultContentBounds = (Rectangle) {0, 0, 800, resultCount * 50};
+    Rectangle resultContentBounds = (Rectangle) {0, 0, 1000, resultCount * 30};
     GuiScrollPanel(state->layoutRecs[2], NULL, resultContentBounds, &state->searchResultsScrollOffset, &view);
     
     BeginScissorMode(view.x, view.y, view.width, view.height);
       for (int i = 0; state->searchResults && state->searchResults[i]; i++)
       {
         // Only draw what is visible
-        Rectangle classInfoRec = { state->layoutRecs[2].x + 10 + state->searchResultsScrollOffset.x, state->layoutRecs[2].y + 10 + i * 50 + state->searchResultsScrollOffset.y, 800, 40};
+        Rectangle classInfoRec = { state->layoutRecs[2].x + 10 + state->searchResultsScrollOffset.x, state->layoutRecs[2].y + 10 + i * 30 + state->searchResultsScrollOffset.y, 800, 30};
         if (CheckCollisionRecs(classInfoRec, view)){
           char* classInfo = ClassToString(state->searchResults[i]);
           bool isHovered = CheckCollisionPointRec(GetMousePosition(), view) && CheckCollisionPointRec(GetMousePosition(), classInfoRec);
@@ -155,6 +157,7 @@ void UpdateGuiLayout(GuiLayoutState *state)
             } else {
               DrawRectangleRec(classInfoRec, COLOR_LIGHTBLUE_ALPHA);
             }
+            hoveredSearchResult = state->searchResults[i];
           }
           GuiLabel(classInfoRec, classInfo);
           MemFree(classInfo);
@@ -163,6 +166,24 @@ void UpdateGuiLayout(GuiLayoutState *state)
     EndScissorMode();
   } else {
     GuiScrollPanel(state->layoutRecs[2], NULL, (Rectangle){0}, &state->searchResultsScrollOffset, NULL);
+  }
+
+  // Period Labels
+  for (int i = 0; i < 14; i++)
+  {
+    if (i >= PERIOD_6){
+      DrawRectangleRec((Rectangle){10, TABLE_MARGIN_TOP + TABLE_HEADER_HEIGHT + i * TABLE_CELL_HEIGHT, TABLE_MARGIN_LEFT + TABLE_CELL_WIDTH * 7, TABLE_CELL_HEIGHT}, COLOR_LIGHTGRAY_ALPHA);
+    }
+    GuiLabel(state->layoutRecs[11 + i], PeriodToString(i));
+    GuiLine((Rectangle){10, TABLE_MARGIN_TOP + TABLE_HEADER_HEIGHT + i * TABLE_CELL_HEIGHT, TABLE_MARGIN_LEFT + TABLE_CELL_WIDTH * 7, 1}, NULL);
+  }
+  GuiLine((Rectangle){10, TABLE_MARGIN_TOP + TABLE_HEADER_HEIGHT + 14 * TABLE_CELL_HEIGHT, TABLE_MARGIN_LEFT + TABLE_CELL_WIDTH * 7, 1}, NULL);
+  
+  // Preview Class
+  if (hoveredSearchResult != NULL){
+    Rectangle classPreviewRect = fCalculateClassSheduleRect(hoveredSearchResult->classSchedule.dayOfWeek,
+      hoveredSearchResult->classSchedule.periodStart, hoveredSearchResult->classSchedule.periodEnd);
+    DrawRectangleRec(classPreviewRect, COLOR_LIGHTBLUE_ALPHA);
   }
   
   // Search Dropdown
@@ -179,11 +200,12 @@ void UpdateGuiLayout(GuiLayoutState *state)
   // Always prioritize the dropdown, since the dropdown rect is overlapping the search results rect
   else if (selectedResult != NULL){
     state->searchResultSelected = true;
+    TraceLog(LOG_INFO, "Selected class: %s", selectedResult->courseName);
     state->searchResultSelectedClass = selectedResult;
   }
 
   // Schedule Layout
-  // Monday Label
+  // Days Of Week  Label
   int tempTextAlign = GuiGetStyle(LABEL, TEXT_ALIGNMENT);
   GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
   GuiLabel(state->layoutRecs[4], "Mon");
@@ -201,17 +223,6 @@ void UpdateGuiLayout(GuiLayoutState *state)
   GuiLabel(state->layoutRecs[10], "Sun");
   GuiSetStyle(LABEL, TEXT_ALIGNMENT, tempTextAlign);
 
-  // Period Labels
-  for (int i = 0; i < 14; i++)
-  {
-    if (i >= PERIOD_6){
-      DrawRectangleRec((Rectangle){10, TABLE_MARGIN_TOP + TABLE_HEADER_HEIGHT + i * TABLE_CELL_HEIGHT, TABLE_CELL_WIDTH * 8, TABLE_CELL_HEIGHT}, COLOR_LIGHTGRAY);
-    }
-    GuiLabel(state->layoutRecs[11 + i], PeriodToString(i));
-    GuiLine((Rectangle){10, TABLE_MARGIN_TOP + TABLE_HEADER_HEIGHT + i * TABLE_CELL_HEIGHT, TABLE_CELL_WIDTH * 8, 1}, NULL);
-  }
-  GuiLine((Rectangle){10, TABLE_MARGIN_TOP + TABLE_HEADER_HEIGHT + 14 * TABLE_CELL_HEIGHT, TABLE_CELL_WIDTH * 8, 1}, NULL);
-  
   // Schedule Cells 
   for (int i = 0; i < 14; i++){
     for (int j = 0; j < 7; j++){
@@ -220,6 +231,7 @@ void UpdateGuiLayout(GuiLayoutState *state)
   }
   
   Class* hoveredClass = NULL;
+  state->scheduleClassRemovedSelected = false;
   if (state->studentSchedule != NULL && state->studentSchedule->classes != NULL) {
     int tempTextWrapMode = GuiGetStyle(DEFAULT, TEXT_WRAP_MODE);
     int tempTextPadding = GuiGetStyle(DEFAULT, TEXT_PADDING);
@@ -288,14 +300,34 @@ void UpdateGuiLayout(GuiLayoutState *state)
 
   // Let user use arrow keys to navigate the empty cells
   if (!state->emptyCellSelected && state->emptyCellSelectedPeriod >= 0 && state->emptyCellSelectedDay >= 0){
-    if (IsKeyPressed(KEY_DOWN)){
-      state->emptyCellSelectedPeriod = (state->emptyCellSelectedPeriod + 1) % 14;
-    } else if (IsKeyPressed(KEY_UP)){
-      state->emptyCellSelectedPeriod = (state->emptyCellSelectedPeriod - 1 + 14) % 14;
-    } else if (IsKeyPressed(KEY_LEFT)){
-      state->emptyCellSelectedDay = ((state->emptyCellSelectedDay - 1 + 7) - 2) % 7 + 2;
-    } else if (IsKeyPressed(KEY_RIGHT)){
-      state->emptyCellSelectedDay = ((state->emptyCellSelectedDay + 1) - 2) % 7 + 2;
+    int moveX = 0;
+    int moveY = 0;
+    if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)){
+      moveY = 1;
+    } else if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)){
+      moveY = -1;
+    } else if (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_A)){
+      moveX = -1;
+    } else if (IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D)){
+      moveX = 1;
+    }
+    if (moveX != 0 || moveY != 0){
+      int targetPeriod = state->emptyCellSelectedPeriod;
+      int targetDay = state->emptyCellSelectedDay;
+      for (int i = 0; i < (moveX != 0 ? 6 : 13); i++)
+      {
+        targetPeriod = (targetPeriod + moveY + 14) % 14;
+        targetDay = (targetDay + moveX + 7 - 2) % 7 + 2;
+        if (!state->scheduleCellOccupation[targetPeriod][targetDay-2]) {
+          state->emptyCellSelectedPeriod = targetPeriod;
+          state->emptyCellSelectedDay = targetDay;
+          break;
+        }
+      }
+      if (state->scheduleCellOccupation[targetPeriod][targetDay-2]){
+        state->emptyCellSelectedPeriod = -1;
+        state->emptyCellSelectedDay = -1;
+      }
     }
   }
 
@@ -317,9 +349,9 @@ void UpdateGuiLayout(GuiLayoutState *state)
   GuiLabel(state->layoutRecs[29], TextFormat("Total Credits: %d", GetCreditCount(state->studentSchedule)));
   
   // Font Style Label
-  GuiLabel(state->layoutRecs[32], "Font Style:");
+  GuiLabel(state->layoutRecs[32], "Font:");
   // Font Style Edit Dropdown
-  const char* fontStyleOptions = "Normal;Bold;Mono;Mono-Bold";
+  const char* fontStyleOptions = "Normal;Bold;Mono";
   
   int tempFontStyleSelected = state->fontStyleSelected;
   GuiToggleGroup(state->layoutRecs[31], fontStyleOptions, &state->fontStyleSelected);
@@ -328,12 +360,15 @@ void UpdateGuiLayout(GuiLayoutState *state)
     state->fontStyleSubmitted = true;
   }
 
-  // A nice little tool tip at the end of screen to show the current hovered class details
-  if (hoveredClass){
-    Rectangle tooltipRect = state->layoutRecs[30];
+  // Tooltip Label
+  GuiLabel(state->layoutRecs[34], "Class Details:");
+  // Tooltip holding class details
+  if (hoveredClass != NULL){
     char* tooltipText = ClassToString(hoveredClass);
-    GuiLabel(tooltipRect, ClassToString(hoveredClass));
+    GuiTextBox(state->layoutRecs[30], tooltipText, strlen(tooltipText), false);
     MemFree(tooltipText);
+  } else {
+    GuiTextBox(state->layoutRecs[30], "", 128, false);
   }
 
   state->exportButtonPressed = false;

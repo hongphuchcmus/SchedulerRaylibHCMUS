@@ -77,7 +77,6 @@ void SetFontStyle(GuiLayoutState *guiState)
 {
   if (guiState->fontStyleSubmitted)
   {
-    TraceLog(LOG_INFO, "Font style submitted");
     switch (guiState->fontStyleSelected)
     {
     case FONT_STYLE_NORMAL_INDEX:

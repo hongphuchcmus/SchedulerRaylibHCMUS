@@ -124,8 +124,6 @@ void ExportStudentSchedule(StudentSchedule studentSchedule, const char* filePath
   }
   *exportStringPtr = '\0';
 
-  TraceLog(LOG_INFO, "String: %s", exportString);
-
   FILE* file = fopen(filePath, "w");  
   if (!file){
     MemFree(exportString);
