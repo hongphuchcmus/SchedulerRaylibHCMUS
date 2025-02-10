@@ -21,8 +21,16 @@ Go to the [Raylib's website](https://www.raylib.com/) and download Raylib versio
 2. **Configure your Raylib path**  
 By default, Raylib will be installed at `C:\raylib` and there's no way to change it during set up.  I changed my raylib directory to `D:\raylib` and configured related build files to use this path. In VSCode, You can try `Ctrl + Shift + F`, search for `D:\raylib` in those files and replace it with your own path.
 
-3. **Build the project**  
+3. **Setting CMake/Make**  
+First, press `Window` button and search `Edit the system environment variables`  
+Then, press `Environment variables`. In `User variables for Admin`, click `Path` and click `Edit` to open `Edit environment variables` tab  
+After seeing that tab, click `New` and add the path `D:\raylib\w64devkit\bin` (this is my own path)  
+Finally, press `OK` to turn off the tab, continue to press `OK` 2 more times to apply the changes  
+
+4. **Build the project**  
 In VSCode, press `F5` 
+
+
 
 # Problems
 The VSCode template is from [Andrew Hamel Codes](https://youtu.be/xWWqhQ1JnvE?si=nqmY1581xXtpsxsh). The author said this workflow is outdated but to me it's a very easy way to get started with Raylib using VSCode. This template helps you seperate your logic into mutiple .c files and .h files.  
