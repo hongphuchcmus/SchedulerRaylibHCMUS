@@ -7,12 +7,12 @@
 
 #define MAX_LAYOUT_RECS 100
 
-#define TABLE_CELL_WIDTH 100
+#define TABLE_CELL_WIDTH 108
 #define TABLE_CELL_HEIGHT 40
 #define TABLE_HEADER_HEIGHT 40
 #define TABLE_MARGIN_LEFT 100
 #define TABLE_MARGIN_TOP 10
-#define TABLE_PADDING 2
+#define TABLE_PADDING 4
 
 typedef struct GuiLayoutState {
   bool filterEditMode;
@@ -39,6 +39,9 @@ typedef struct GuiLayoutState {
   const Class* searchResultSelectedClass;
   bool scheduleClassRemovedSelected; // A class is right clicked
   const Class* scheduleClassRemoved;
+  bool fontSizeDropdownActive;
+  int fontSizeSelected;
+  bool fontSizeDropdownSubmitted;
 } GuiLayoutState;
 
 GuiLayoutState InitGuiLayoutState();

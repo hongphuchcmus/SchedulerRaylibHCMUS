@@ -89,6 +89,19 @@ int main() {
     if (guiState.scheduleClassRemovedSelected){
       RemoveClassFromSchedule(studentSchedule, guiState.scheduleClassRemoved);
     }
+    if (guiState.fontSizeDropdownSubmitted){
+      switch (guiState.fontSizeSelected)
+      {
+      case FONT_SIZE_SMALL_INDEX:
+        GuiSetStyle(DEFAULT, TEXT_SIZE, FONT_SIZE_SMALL);
+        break;
+      case FONT_SIZE_NORMAL_INDEX:
+        GuiSetStyle(DEFAULT, TEXT_SIZE, FONT_SIZE_NORMAL);
+        break;
+      default:
+        break;
+      }
+    }
     BeginDrawing();
       ClearBackground(RAYWHITE);
       UpdateGuiLayout(&guiState);

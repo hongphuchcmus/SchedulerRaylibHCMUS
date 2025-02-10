@@ -58,3 +58,17 @@ void AddClassToSchedule(StudentSchedule *schedule, const Class * classData)
   schedule->classes[count] = classData;
   schedule->classes[count+1] = NULL;
 }
+
+
+int GetCreditCount(const StudentSchedule *studentSchedule)
+{
+  if (studentSchedule == NULL || studentSchedule->classes == NULL){
+    return 0;
+  }
+  int creditCount = 0;
+  for (int i = 0; studentSchedule->classes[i]; i++)
+  {
+    creditCount += studentSchedule->classes[i]->creditCount;
+  }
+  return creditCount;
+}

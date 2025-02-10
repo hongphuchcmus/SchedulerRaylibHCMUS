@@ -9,4 +9,6 @@ typedef struct StudentSchedule {
 StudentSchedule* CreateStudentSchedule();
 void RemoveClassFromSchedule(StudentSchedule* schedule, const Class* classData);
 void AddClassToSchedule(StudentSchedule* schedule, const Class* classData);
+int GetCreditCount(const StudentSchedule* studentSchedule);
+
 #endif

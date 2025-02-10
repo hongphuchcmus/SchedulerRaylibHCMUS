@@ -15,7 +15,7 @@ Rectangle fCalculateCellRect(int i, int j){
 Rectangle fCalculateClassSheduleRect(int day, int periodStart, int periodEnd){
   return (Rectangle){
     TABLE_PADDING + TABLE_MARGIN_LEFT + TABLE_CELL_WIDTH * (day - 2), TABLE_PADDING + TABLE_MARGIN_TOP + TABLE_HEADER_HEIGHT + TABLE_CELL_HEIGHT * periodStart,
-    TABLE_CELL_WIDTH - TABLE_PADDING, TABLE_CELL_HEIGHT * (periodEnd - periodStart + 1) - TABLE_PADDING
+    TABLE_CELL_WIDTH - 2 * TABLE_PADDING, TABLE_CELL_HEIGHT * (periodEnd - periodStart + 1) - 2 * TABLE_PADDING
   };
 }
 
@@ -69,6 +69,19 @@ GuiLayoutState InitGuiLayoutState()
   {
     state.layoutRecs[11 + i] = (Rectangle){10, TABLE_MARGIN_TOP + TABLE_HEADER_HEIGHT + i * TABLE_CELL_HEIGHT, 100, TABLE_CELL_HEIGHT};
   }
+
+
+  // Credit Counter Label
+  state.layoutRecs[29]  = (Rectangle){10, SCREEN_HEIGHT - 90, 390, 30};
+  // Font Size Label
+  state.layoutRecs[32]  = (Rectangle){SCREEN_WIDTH - 400 - 200 - 110, SCREEN_HEIGHT - 90, 100, 30};
+  // Font Size Edit Dropdown
+  state.layoutRecs[31]  = (Rectangle){SCREEN_WIDTH - 400 - 200, SCREEN_HEIGHT - 90, 190, 30};
+  
+  // Tooltip Label
+  state.layoutRecs[30]  = (Rectangle){10, SCREEN_HEIGHT - 60, 800, 20};
+// Controls Label
+  state.layoutRecs[33]  = (Rectangle){10, SCREEN_HEIGHT - 30, 800, 20};
 
   return state;
 }
@@ -187,6 +200,9 @@ void UpdateGuiLayout(GuiLayoutState *state)
   // Period Labels
   for (int i = 0; i < 14; i++)
   {
+    if (i >= PERIOD_6){
+      DrawRectangleRec((Rectangle){10, TABLE_MARGIN_TOP + TABLE_HEADER_HEIGHT + i * TABLE_CELL_HEIGHT, TABLE_CELL_WIDTH * 8, TABLE_CELL_HEIGHT}, COLOR_LIGHTGRAY);
+    }
     GuiLabel(state->layoutRecs[11 + i], TextFormat("%.2f", PeriodToFloat(i)));
     GuiLine((Rectangle){10, TABLE_MARGIN_TOP + TABLE_HEADER_HEIGHT + i * TABLE_CELL_HEIGHT, TABLE_CELL_WIDTH * 8, 1}, NULL);
   }
@@ -250,7 +266,9 @@ void UpdateGuiLayout(GuiLayoutState *state)
       if (!state->scheduleCellOccupation[i][j]){
         Rectangle cellRect = fCalculateCellRect(i, j);
         bool hovered = CheckCollisionPointRec(GetMousePosition(), cellRect);
-        DrawRectangleRec(cellRect, hovered ? COLOR_LIGHTBLUE : RAYWHITE);
+        if (hovered){
+          DrawRectangleRec(cellRect, COLOR_LIGHTBLUE_ALPHA);
+        }
         char* text = NULL;
         if (j == 6){ // No one studies on Sunday
           text = "x";
@@ -291,11 +309,29 @@ void UpdateGuiLayout(GuiLayoutState *state)
     state->emptyCellSelectedDay = -1;
   }
   
+  // A credit counter
+  GuiLabel(state->layoutRecs[29], TextFormat("Total Credits: %d", GetCreditCount(state->studentSchedule)));
+  
+  // Font Size Label
+  GuiLabel(state->layoutRecs[32], "Font Size:");
+  // Font Size Edit Dropdown
+  state->fontSizeDropdownSubmitted = false;
+  const char* fontSizeOptions = "10;20";
+  if (GuiDropdownBox(state->layoutRecs[31], fontSizeOptions, &state->fontSizeSelected, state->fontSizeDropdownActive)){
+    state->fontSizeDropdownActive = !state->fontSizeDropdownActive;
+    if (!state->fontSizeDropdownActive){
+      state->fontSizeDropdownSubmitted = true;
+    }
+  }
+  
   // A nice little tool tip at the end of screen to show the current hovered class details
   if (hoveredClass){
-    Rectangle tooltipRect = (Rectangle) {10, SCREEN_HEIGHT - 30, 800, 20};
+    Rectangle tooltipRect = state->layoutRecs[30];
     char* tooltipText = (char*) ClassToString(hoveredClass);
     GuiLabel(tooltipRect, ClassToString(hoveredClass));
     MemFree(tooltipText);
   }
+
+  // Controls Label
+  GuiLabel(state->layoutRecs[33], "ARROW KEYS - Navigate    RMB - Remove Class    LMB - Select Class    ESC - Exit");
 }
