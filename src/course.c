@@ -34,23 +34,43 @@ static const char *fTextToUpper(const char *text)
   return upperText;
 }
 
-const char *ClassToString(const Class *c)
+char *ClassToString(const Class *c)
 {
   return strdup(TextFormat("%s -- %s -- %s -- %s -- %d/%d -- TC:%d -- T%d %s-%s -- %s -- %d",
     c->courseId, c->courseName, c->classId, c->location, c->enrolledCount, c->classSize, c->creditCount, c->classSchedule.dayOfWeek, PeriodToString(c->classSchedule.periodStart), PeriodToString(c->classSchedule.periodEnd), c->classSchedule.room, c->year));
 }
 
+// String that can be saved to file
+char *ClassToFormatedString(const Class *c)
+{
+  return strdup(TextFormat("%s|%s|%s|%s|%d/%d|TC:%d|T%d %s-%s|%s|%d",
+    c->courseId, c->courseName, c->classId, c->location, c->enrolledCount, c->classSize, c->creditCount, c->classSchedule.dayOfWeek, PeriodToString(c->classSchedule.periodStart), PeriodToString(c->classSchedule.periodEnd), c->classSchedule.room, c->year));
+}
+
+// Parse from saved string
+Class *ParseClassFormatedString(const char * classString){
+  Class* classData = MemAlloc(sizeof(Class));
+  float periodStartFloat;
+  float periodEndFloat;
+  sscanf(classString, "%[^|]|%[^|]|%[^|]|%[^|]|%d/%d|TC:%d|T%d %f-%f|%[^|]|%d",
+    classData->courseId, classData->courseName, classData->classId, classData->location, &classData->enrolledCount, &classData->classSize, &classData->creditCount, &classData->classSchedule.dayOfWeek, &periodStartFloat, &periodEndFloat, classData->classSchedule.room, &classData->year);
+  classData->classSchedule.periodStart = ParsePeriod(periodStartFloat);
+  classData->classSchedule.periodEnd = ParsePeriod(periodEndFloat);
+}
+
+
 Class *ParseClass(char *dataLine)
 {
   // Reading class data from tab separated line
   // Class itself and its string data are heap allocated
-  // Remember to free the memory
+  // Remember to free the memory 
   Class* classData = MemAlloc(sizeof(Class));
   *classData = (Class){0};
 
-  //dataLine = strdup(dataLine);
-  
+  // Note: strcpy() copy the dataLine into char[] fields
+  // so no need to free the memory for these fields
   int colIndex = 0;  
+  
   for (const char * token = strtok(dataLine, "\t"); token != NULL; token = strtok(NULL, "\t\n"))
   {
     switch (colIndex)
@@ -90,7 +110,7 @@ Class *ParseClass(char *dataLine)
   return classData;
 }
 
-Class **ParseClasses(const char *filePath, int* outSize)
+Class **ParseClasses(const char *filePath)
 {
   FILE* file = fopen(filePath, "r");
   if (!file) return NULL;
@@ -109,20 +129,19 @@ Class **ParseClasses(const char *filePath, int* outSize)
       firstLine = false;
       continue;
     }
-    char* normalizedLine = NormalizeVietnamese(lineBuffer, resolveTable);
-    
     if (count + 2 > currentSize){ // 1 more slot for the terminator
       currentSize += incrementalCapacity;
       classes = MemRealloc(classes, sizeof(Class*) * currentSize);
     }
     
+    char* normalizedLine = NormalizeVietnamese(lineBuffer, resolveTable);
     Class* classData = ParseClass(normalizedLine);
+    MemFree(normalizedLine);
     classes[count] = classData;
     count++;
   }
   classes[count] = NULL;
   fclose(file);
-  *outSize = count;
   return classes;
 }
 
@@ -198,9 +217,27 @@ char *PeriodToString(Period period)
   float periodFloat = PeriodToFloat(period);
   float epsilon = 0.01f;
   if (fabs(periodFloat - (int)periodFloat) < epsilon){
-    return TextFormat("%d", (int)periodFloat);
+    return (char*) TextFormat("%d", (int)periodFloat);
   } else {
-    return TextFormat("%.1f", periodFloat);
+    return (char*) TextFormat("%.1f", periodFloat);
+  }
+}
+Period ParsePeriodFromString(const char *periodStr)
+{
+  // This function is not used
+  float periodFloat;
+  sscanf(periodStr, "%f", &periodFloat);
+  return ParsePeriod(periodFloat);
+}
+
+void ClearClasses(Class **classes)
+{
+  if (classes == NULL){
+    return;
+  }
+  for (int i = 0;classes[i]; i++)
+  {
+    MemFree(classes[i]);
   }
 }
 
@@ -229,8 +266,8 @@ Class **FilterByCourseId(Class** classes, const char *courseId)
       count++;
     }
     // Free the memory
-    MemFree((void*)lowerCourseId);
-    MemFree((void*)lowerSearchText);
+    MemFree(lowerCourseId);
+    MemFree(lowerSearchText);
   }
   filteredClasses[count] = NULL;
   return filteredClasses;
@@ -261,8 +298,8 @@ Class **FilterByCourseName(Class** classes, const char *courseName)
       count++;
     }
     // Free the memory
-    MemFree((void*)lowerCourseName);
-    MemFree((void*)lowerSearchText);
+    MemFree(lowerCourseName);
+    MemFree(lowerSearchText);
   }
   filteredClasses[count] = NULL;
   return filteredClasses;
@@ -293,8 +330,8 @@ Class **FilterByClassId(Class** classes, const char *classId)
       count++;
     }
     // Free the memory
-    MemFree((void*)lowerClassId);
-    MemFree((void*)lowerSearchText);
+    MemFree(lowerClassId);
+    MemFree(lowerSearchText);
   }
   filteredClasses[count] = NULL;
   return filteredClasses;
@@ -376,3 +413,4 @@ Class **FilterByPeriod(Class** classes, int dayOfWeek, Period period)
   filteredClasses[count] = NULL;
   return filteredClasses;
 }
+

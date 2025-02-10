@@ -54,13 +54,16 @@ typedef struct Class {
   char location[50];
 } Class;
 
-const char* ClassToString(const Class* c);
+char* ClassToString(const Class* c);
+char* ClassToFormatedString(const Class* c);
+Class* ParseClassFormatedString(const char* classString);
 Class* ParseClass(char* dataLine);
-Class** ParseClasses(const char* filePath, int* outSize);
+Class** ParseClasses(const char* filePath);
 ClassSchedule ParseClassSchedule(const char* scheduleStr);
 Period ParsePeriod(float periodFloat);
 float PeriodToFloat(Period period);
-char* PeriodToString(Period period);
+char *PeriodToString(Period period);
+void ClearClasses(Class** classes);
 
 Class** FilterByCourseId(Class** classes, const char* courseId);
 Class** FilterByCourseName(Class** classes, const char* courseName);

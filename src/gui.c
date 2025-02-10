@@ -82,8 +82,8 @@ GuiLayoutState InitGuiLayoutState()
   state.layoutRecs[31]  = (Rectangle){SCREEN_WIDTH - 400 - 400, SCREEN_HEIGHT - 90, 90, 30};
   // Tooltip Label
   state.layoutRecs[30]  = (Rectangle){10, SCREEN_HEIGHT - 60, 800, 20};
-// Controls Label
-  state.layoutRecs[33]  = (Rectangle){10, SCREEN_HEIGHT - 30, 800, 20};
+  // Controls Label
+  state.layoutRecs[33]  = (Rectangle){10, SCREEN_HEIGHT - 30, 820, 20};
 
   return state;
 }
@@ -145,7 +145,7 @@ void UpdateGuiLayout(GuiLayoutState *state)
         // Only draw what is visible
         Rectangle classInfoRec = { state->layoutRecs[2].x + 10 + state->searchResultsScrollOffset.x, state->layoutRecs[2].y + 10 + i * 50 + state->searchResultsScrollOffset.y, 800, 40};
         if (CheckCollisionRecs(classInfoRec, view)){
-          char* classInfo = (char*) ClassToString(state->searchResults[i]);
+          char* classInfo = ClassToString(state->searchResults[i]);
           bool isHovered = CheckCollisionPointRec(GetMousePosition(), view) && CheckCollisionPointRec(GetMousePosition(), classInfoRec);
           bool isPressed = isHovered && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
           if (isHovered){
@@ -331,11 +331,16 @@ void UpdateGuiLayout(GuiLayoutState *state)
   // A nice little tool tip at the end of screen to show the current hovered class details
   if (hoveredClass){
     Rectangle tooltipRect = state->layoutRecs[30];
-    char* tooltipText = (char*) ClassToString(hoveredClass);
+    char* tooltipText = ClassToString(hoveredClass);
     GuiLabel(tooltipRect, ClassToString(hoveredClass));
     MemFree(tooltipText);
   }
 
+  state->exportButtonPressed = false;
+  if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)){
+    state->exportButtonPressed = true;
+  }
+
   // Controls Label
-  GuiLabel(state->layoutRecs[33], "ARROW KEYS - Navigate    LMB - Add Class    RMB - Remove Class    ESC - Exit");
+  GuiLabel(state->layoutRecs[33], "ARROWS - Navigate    LMB - Add Class    RMB - Remove Class    ESC - Exit    CTRL+E - Export    DRAG & DROP - Import");
 }

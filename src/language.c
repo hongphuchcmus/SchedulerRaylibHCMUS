@@ -52,7 +52,7 @@ char *NormalizeVietnamese(const char *str, int **resolveTable)
   // U+00C0 -> U+01B0 (2 bytes each)
   // U+1EA0 -> U+1EF9 (3 bytes each)
   // vietnam dong: U+20AB (3 bytes)
-
+  // Remember to free the memory
   char *res = MemAlloc(strlen(str) + 1);
   int i = 0;
   unsigned char *ptr = (unsigned char *)str;

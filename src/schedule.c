@@ -2,13 +2,8 @@
 #include "raylib.h"
 #include <stddef.h>
 #include <stdio.h>
-
-StudentSchedule *CreateStudentSchedule()
-{
-  StudentSchedule* studentSchedule = MemAlloc(sizeof(StudentSchedule));
-  studentSchedule->classes = NULL;
-  return studentSchedule;
-}
+#include <stdlib.h>
+#include <string.h>
 
 void RemoveClassFromSchedule(StudentSchedule *schedule, const Class * classData)
 {
@@ -71,4 +66,72 @@ int GetCreditCount(const StudentSchedule *studentSchedule)
     creditCount += studentSchedule->classes[i]->creditCount;
   }
   return creditCount;
+}
+
+void ClearStudentSchedule(StudentSchedule *studentSchedule)
+{
+  if (studentSchedule == NULL || studentSchedule->classes == NULL){
+    return;
+  }
+  MemFree(studentSchedule->classes);
+  studentSchedule->classes = NULL;
+}
+
+StudentSchedule ImportStudentSchedule(const char *filePath)
+{
+  StudentSchedule schedule = {0};
+  FILE* file = fopen(filePath, "r");
+  if (!file) return schedule;
+  char lineBuffer[1024];
+  while (fgets(lineBuffer, 1024, file)){
+    Class* classData = ParseClassFormatedString(lineBuffer);
+    AddClassToSchedule(&schedule, classData);
+  }
+  fclose(file);
+  return schedule;
+}
+
+void ExportStudentSchedule(StudentSchedule studentSchedule, const char* filePath)
+{
+  if (studentSchedule.classes == NULL){
+    return;
+  }
+  int currentCapacity = 1024;
+  int incrementalCapacity = 512;
+  char* exportString = MemAlloc(sizeof(char) * currentCapacity);
+  char* exportStringPtr = exportString;
+  int curSize = 0;
+  for (int i = 0; studentSchedule.classes[i]; i++)
+  {
+    char* classString = ClassToFormatedString(studentSchedule.classes[i]);
+    if (curSize + strlen(classString) + 1 > currentCapacity){
+      currentCapacity += incrementalCapacity;
+      exportString = MemRealloc(exportString, sizeof(char) * currentCapacity);
+      exportStringPtr = exportString + curSize;
+    } else {
+      char* classStringPtr = classString;
+      while (*classStringPtr != '\0'){
+        *exportStringPtr = *classStringPtr;
+        exportStringPtr++;
+        classStringPtr++;
+        curSize++;
+      }
+      *exportStringPtr = '\n';
+      exportStringPtr++;
+      curSize++;
+    }
+    MemFree(classString);
+  }
+  *exportStringPtr = '\0';
+
+  TraceLog(LOG_INFO, "String: %s", exportString);
+
+  FILE* file = fopen(filePath, "w");  
+  if (!file){
+    MemFree(exportString);
+  }
+  fputs(exportString, file);
+  fclose(file);
+  MemFree(exportString);
+  return;
 }
