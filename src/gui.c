@@ -42,6 +42,8 @@ GuiLayoutState InitGuiLayoutState()
   state.matchCurrentCellEnabled = false;
   state.matchCurrentCellToggled = false;
   state.fontStyleSelected = FONT_STYLE_DEFAULT_INDEX;
+  state.exportPathEditMode = false;
+  state.importPathEditMode = false;
 
   // (Search + Filter) 
   // Filter Label
@@ -73,18 +75,30 @@ GuiLayoutState InitGuiLayoutState()
     state.layoutRecs[11 + i] = (Rectangle){10, TABLE_MARGIN_TOP + TABLE_HEADER_HEIGHT + i * TABLE_CELL_HEIGHT, 100, TABLE_CELL_HEIGHT};
   }
 
-  // Tooltip Label
-  state.layoutRecs[34]  = (Rectangle){10, SCREEN_HEIGHT - 90, 110, 20};
-  // Tooltip Text Box
-  state.layoutRecs[30]  = (Rectangle){120, SCREEN_HEIGHT - 90, SCREEN_WIDTH - 130, 20};
   // Credit Counter Label
-  state.layoutRecs[29]  = (Rectangle){10, SCREEN_HEIGHT - 60, 390, 20};
+  state.layoutRecs[29]  = (Rectangle){10, SCREEN_HEIGHT - 90, 150, 20};
+  // Tooltip Label
+  state.layoutRecs[34]  = (Rectangle){160, SCREEN_HEIGHT - 90, 120, 20};
+  // Tooltip Text Box
+  state.layoutRecs[30]  = (Rectangle){290, SCREEN_HEIGHT - 90, SCREEN_WIDTH - 300, 20};
+  // Import Path Text Box
+  state.layoutRecs[36]  = (Rectangle){10, SCREEN_HEIGHT - 60, SCREEN_WIDTH/2 - 150, 20};
+  // Import Label
+  state.layoutRecs[35]  = (Rectangle){SCREEN_WIDTH/2 - 150 + 20, SCREEN_HEIGHT - 60, 90, 20};
+  // Export Path Text Box
+  state.layoutRecs[38]  = (Rectangle){SCREEN_WIDTH/2 + 10, SCREEN_HEIGHT - 60, SCREEN_WIDTH/2 - 150, 20};
+  // Export Label
+  state.layoutRecs[37]  = (Rectangle){SCREEN_WIDTH - 150 + 20, SCREEN_HEIGHT - 60, 90, 20};
+
   // Controls Label
   state.layoutRecs[33]  = (Rectangle){10, SCREEN_HEIGHT - 30, SCREEN_WIDTH - 300, 20};
   // Font Style Label
   state.layoutRecs[32]  = (Rectangle){SCREEN_WIDTH - 310, SCREEN_HEIGHT - 30, 60, 20};
   // Font Style Edit Toggle Group
   state.layoutRecs[31]  = (Rectangle){SCREEN_WIDTH - 240, SCREEN_HEIGHT - 30, 70, 20};
+
+  strcpy(state.importPath, DEFAULT_IMPORT_PATH);
+  strcpy(state.exportPath, DEFAULT_EXPORT_PATH);
 
   return state;
 }
@@ -145,7 +159,7 @@ void UpdateGuiLayout(GuiLayoutState *state)
       for (int i = 0; state->searchResults && state->searchResults[i]; i++)
       {
         // Only draw what is visible
-        Rectangle classInfoRec = { state->layoutRecs[2].x + 10 + state->searchResultsScrollOffset.x, state->layoutRecs[2].y + 10 + i * 30 + state->searchResultsScrollOffset.y, 800, 30};
+        Rectangle classInfoRec = { state->layoutRecs[2].x + 10 + state->searchResultsScrollOffset.x, state->layoutRecs[2].y + 10 + i * 30 + state->searchResultsScrollOffset.y, 990, 30};
         if (CheckCollisionRecs(classInfoRec, view)){
           char* classInfo = ClassToString(state->searchResults[i]);
           bool isHovered = CheckCollisionPointRec(GetMousePosition(), view) && CheckCollisionPointRec(GetMousePosition(), classInfoRec);
@@ -179,13 +193,6 @@ void UpdateGuiLayout(GuiLayoutState *state)
   }
   GuiLine((Rectangle){10, TABLE_MARGIN_TOP + TABLE_HEADER_HEIGHT + 14 * TABLE_CELL_HEIGHT, TABLE_MARGIN_LEFT + TABLE_CELL_WIDTH * 7, 1}, NULL);
   
-  // Preview Class
-  if (hoveredSearchResult != NULL){
-    Rectangle classPreviewRect = fCalculateClassSheduleRect(hoveredSearchResult->classSchedule.dayOfWeek,
-      hoveredSearchResult->classSchedule.periodStart, hoveredSearchResult->classSchedule.periodEnd);
-    DrawRectangleRec(classPreviewRect, COLOR_LIGHTBLUE_ALPHA);
-  }
-  
   // Search Dropdown
   if (GuiDropdownBox(state->layoutRecs[3], filterOptions, &state->searchOptionsDropdownSelected, state->searchOptionsDropdownActive)){
     // Prevent both dropdowns from being active at the same time
@@ -200,7 +207,6 @@ void UpdateGuiLayout(GuiLayoutState *state)
   // Always prioritize the dropdown, since the dropdown rect is overlapping the search results rect
   else if (selectedResult != NULL){
     state->searchResultSelected = true;
-    TraceLog(LOG_INFO, "Selected class: %s", selectedResult->courseName);
     state->searchResultSelectedClass = selectedResult;
   }
 
@@ -298,17 +304,24 @@ void UpdateGuiLayout(GuiLayoutState *state)
     }
   }
 
+  // Preview Class
+  if (hoveredSearchResult != NULL){
+    Rectangle classPreviewRect = fCalculateClassSheduleRect(hoveredSearchResult->classSchedule.dayOfWeek,
+      hoveredSearchResult->classSchedule.periodStart, hoveredSearchResult->classSchedule.periodEnd);
+    DrawRectangleRec(classPreviewRect, COLOR_LIGHTBLUE_ALPHA);
+  }
+
   // Let user use arrow keys to navigate the empty cells
   if (!state->emptyCellSelected && state->emptyCellSelectedPeriod >= 0 && state->emptyCellSelectedDay >= 0){
     int moveX = 0;
     int moveY = 0;
-    if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)){
+    if (IsKeyPressed(KEY_DOWN)){
       moveY = 1;
-    } else if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)){
+    } else if (IsKeyPressed(KEY_UP)){
       moveY = -1;
-    } else if (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_A)){
+    } else if (IsKeyPressed(KEY_LEFT)){
       moveX = -1;
-    } else if (IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D)){
+    } else if (IsKeyPressed(KEY_RIGHT)){
       moveX = 1;
     }
     if (moveX != 0 || moveY != 0){
@@ -363,19 +376,51 @@ void UpdateGuiLayout(GuiLayoutState *state)
   // Tooltip Label
   GuiLabel(state->layoutRecs[34], "Class Details:");
   // Tooltip holding class details
-  if (hoveredClass != NULL){
-    char* tooltipText = ClassToString(hoveredClass);
+  if (hoveredClass != NULL || hoveredSearchResult != NULL){
+    char* tooltipText;
+    if (hoveredClass != NULL){
+      tooltipText = ClassToString(hoveredClass);
+    } else{
+      tooltipText = ClassToString(hoveredSearchResult);
+    }
     GuiTextBox(state->layoutRecs[30], tooltipText, strlen(tooltipText), false);
     MemFree(tooltipText);
   } else {
     GuiTextBox(state->layoutRecs[30], "", 128, false);
   }
 
+  // state->exportButtonPressed = false;
+  // if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)){
+  //   state->exportButtonPressed = true;
+  // }
+
+  state->importButtonPressed = false;
   state->exportButtonPressed = false;
-  if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)){
+
+  // Import Path
+  if (GuiTextBox(state->layoutRecs[36], state->importPath, 512, state->importPathEditMode)){
+    state->importPathEditMode = !state->importPathEditMode;
+    if (!state->importPathEditMode){
+      state->importButtonPressed = true;
+    }
+  }
+  // Import Button
+  if (GuiButton(state->layoutRecs[35], "Import")){
+    state->importButtonPressed = true;
+  }
+  
+  // Export Path
+  if (GuiTextBox(state->layoutRecs[38], state->exportPath, 512, state->exportPathEditMode)){
+    state->exportPathEditMode = !state->exportPathEditMode;
+    if (!state->exportPathEditMode){
+      state->exportButtonPressed = true;
+    }
+  }
+  // Export Button
+  if (GuiButton(state->layoutRecs[37], "Export")){
     state->exportButtonPressed = true;
   }
 
   // Controls Label
-  GuiLabel(state->layoutRecs[33], "ARROWS - Navigate    LMB - Add Class    RMB - Remove Class    ESC - Exit    CTRL+E - Export    DRAG & DROP - Import");
+  GuiLabel(state->layoutRecs[33], "ARROWS - Navigate    LMB - Add Class    RMB - Remove Class    ESC - Exit    DRAG & DROP - Import");
 }

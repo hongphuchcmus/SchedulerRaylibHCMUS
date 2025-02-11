@@ -2,6 +2,8 @@
 #include "def.h"
 #include <stddef.h>
 #include "gui_func.h"
+#include <string.h>
+#include <stdlib.h>
 
 void SearchAndFilter(GuiLayoutState *guiState, Class **classes)
 {
@@ -128,8 +130,7 @@ GuiLayoutState InitGuiLayout(StudentSchedule *studentSchedule)
 void ExportSchedule(GuiLayoutState* state, StudentSchedule* studentSchedule)
 {
   if (state->exportButtonPressed){
-    const char* exportPath = "resources/schedule.txt";
-    ExportStudentSchedule(*studentSchedule, exportPath);
+    ExportStudentSchedule(*studentSchedule, state->exportPath);
   }
 }
 
@@ -140,8 +141,11 @@ void ImportSchedule(GuiLayoutState* state, StudentSchedule* studentSchedule)
     if (filePaths.count > 0){
       ClearStudentSchedule(studentSchedule);
       *studentSchedule = ImportStudentSchedule(filePaths.paths[0]);
+      strcpy(state->importPath, filePaths.paths[0]);
     }
     UnloadDroppedFiles(filePaths);
+  } else if (state->importButtonPressed){
+    *studentSchedule = ImportStudentSchedule(state->importPath);
   }
 }
 

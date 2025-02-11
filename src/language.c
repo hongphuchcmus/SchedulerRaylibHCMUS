@@ -187,8 +187,9 @@ int **ReadResolveTable(const char *path)
   }
 
   char line[1024];
+  // Column indices
   const int unicodeHex = 1;
-  const int vnQR = 10;
+  const int vnQR = 2;
   int k = 0;
   bool firstLine = true;
   while (fgets(line, 1024, file))
@@ -196,6 +197,7 @@ int **ReadResolveTable(const char *path)
     if (firstLine)
     {
       firstLine = false;
+      
       continue; // Skip the headers
     }
     // Extract fields using fGetfield (you may need to implement this function)
@@ -203,6 +205,7 @@ int **ReadResolveTable(const char *path)
     const char *unicode = fGetfield(tmp1, unicodeHex);
     char *tmp2 = strdup(line);
     const char *qr = fGetfield(tmp2, vnQR);  
+    
     table[k][0] = ConstructUnicodeChar(unicode);
     table[k][1] = qr[0];
     // Clean up temporary strings

@@ -32,17 +32,20 @@
       "type": "process",
       "command": "make",
       "args": [
-        "PLATFORM=PLATFORM_DESKTOP"
+        "PLATFORM=PLATFORM_DESKTOP",
+        "BUILD_MODE=RELEASE"
       ],
       "windows": {
         "command": "mingw32-make.exe",
         "args": [
-          "RAYLIB_PATH=D:/raylib/raylib"
+          "RAYLIB_PATH=D:/raylib/raylib",
+          "BUILD_MODE=RELEASE"
         ]
       },
       "osx": {
         "args": [
-          "RAYLIB_PATH=<path_to_raylib>/raylib"
+          "RAYLIB_PATH=<path_to_raylib>/raylib",
+          "BUILD_MODE=RELEASE"
         ]
       },
       "group": "build",

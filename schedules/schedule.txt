@@ -1,0 +1,4 @@
+CSC11007|Nhap mon DevOps|22_4|LT|0/30|TC:4|T6 1-4|N/A|2022
+CSC13005|Phan tich va quan ly yeu cau phan mem|22_31|LT|0/60|TC:4|T7 1-4|N/A|2022
+CSC14005|Nhap mon hoc may|22_21|LT|0/70|TC:4|T4 1-4|N/A|2022
+CSC13010|Thiet ke phan mem|22_3|LT|0/60|TC:4|T7 6-9|N/A|2022

@@ -26,6 +26,9 @@
 #define FONT_STYLE_MONO_INDEX 2
 #define FONT_STYLE_MONO_BOLD_INDEX 3
 
+#define DEFAULT_IMPORT_PATH "schedules/schedule.txt"
+#define DEFAULT_EXPORT_PATH "schedules/schedule.txt"
+
 #define COLOR_LIGHTBLUE CLITERAL(Color){129, 230, 247, 255}
 #define COLOR_LIGHTBLUE_ALPHA CLITERAL(Color){129, 230, 247, 100}
 #define COLOR_LIGHTGRAY CLITERAL(Color){240, 240, 240, 255}
@@ -59,6 +62,11 @@ typedef struct GuiLayoutState {
   const Class* scheduleClassRemoved;
   int fontStyleSelected;
   bool fontStyleSubmitted;
+  bool importPathEditMode;
+  bool exportPathEditMode;
+  char importPath[512];
+  char exportPath[512];
+  bool importButtonPressed;
   bool exportButtonPressed;
 } GuiLayoutState;
 
